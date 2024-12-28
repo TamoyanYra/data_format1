@@ -1,31 +1,42 @@
 import json
 import csv
 
-# Задаем имя JSON-файла и выходного CSV-файла
-json_file = 'Amsterdam24.09.06.json'
-csv_file = 'Amsterdam_weather.csv'
+def extract_weather_to_csv(json_file, csv_file):
+    """
+    Извлекает информацию о температуре "feels_like" и погодных условиях "condition" по часам из JSON-файла 
+    и записывает её в CSV-файл.
 
-# Чтение данных из JSON-файла
-with open(json_file, 'r') as file:
-    data = json.load(file)
+    :param json_file: Имя JSON-файла с данными о погоде.
+    :param csv_file: Имя выходного CSV-файла.
+    """
+    try:
+        # Открываем и читаем JSON-файл
+        with open(json_file, 'r', encoding='utf-8') as f:
+            weather_data = json.load(f)
 
-# Предполагается, что данные о погоде хранятся в формате списка по часам
-# Например, data['hourly'] содержит список с данными о погоде
-hourly_data = data.get('hourly', [])
+        # Открываем CSV-файл для записи
+        with open(csv_file, 'w', newline='', encoding='utf-8') as csvfile:
+            csv_writer = csv.writer(csvfile)
 
-# Открытие CSV-файла для записи
-with open(csv_file, 'w', newline='', encoding='utf-8') as file:
-    writer = csv.writer(file)
+            # Записываем заголовки
+            csv_writer.writerow(["Hour", "Feels Like (°C)", "Condition"])
 
-    # Запись заголовков в CSV-файл
-    writer.writerow(['Time', 'Feels Like (°C)', 'Condition'])
+            # Предполагаем, что данные по часам находятся в секции "hourly"
+            hourly_data = weather_data.get("hourly", [])
 
-    # Запись данных по часам
-    for hour in hourly_data:
-        time = hour.get('time')  # Предположим, время хранится в hour['time']
-        feels_like = hour.get('feels_like')  # Температура "как ощущается"
-        condition = hour.get('condition')  # Погодные условия
+            for hour_info in hourly_data:
+                hour = hour_info.get("hour", "N/A")
+                feels_like = hour_info.get("feels_like", "N/A")
+                condition = hour_info.get("condition", "N/A")
 
-        writer.writerow([time, feels_like, condition])
+                # Записываем строку в CSV-файл
+                csv_writer.writerow([hour, feels_like, condition])
 
-print(f"Данные успешно записаны в файл {csv_file}")
+        print(f"Данные успешно записаны в файл {csv_file}")
+    except Exception as e:
+        print(f"Произошла ошибка: {e}")
+
+# Использование функции
+json_file = 'Amsterdam24.09.06.json'  # Имя JSON-файла
+csv_file = 'Amsterdam_weather.csv'  # Имя выходного CSV-файла
+extract_weather_to_csv(json_file, csv_file)
